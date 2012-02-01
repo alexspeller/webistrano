@@ -5,10 +5,10 @@ class Stage < ActiveRecord::Base
 	has_many :users , :through => :stages_user
   
   belongs_to :project
-  has_and_belongs_to_many :recipes, :after_add => :recipes_changed, :after_remove => :recipes_changed
+  has_and_belongs_to_many :recipes, :after_add => :deployment_changed, :after_remove => :deployment_changed
   has_many :roles, :dependent => :destroy, :order => "name ASC"
   has_many :hosts, :through => :roles, :uniq => true
-  has_many :configuration_parameters, :dependent => :destroy, :class_name => "StageConfiguration", :order => "name ASC"
+  has_many :configuration_parameters, :dependent => :destroy, :class_name => "StageConfiguration", :order => "name ASC", :after_add => :deployment_changed, :after_remove => :deployment_changed
   has_many :deployments, :dependent => :destroy, :order => "created_at DESC"
   belongs_to :locking_deployment, :class_name => 'Deployment', :foreign_key => :locked_by_deployment_id 
   
@@ -32,7 +32,7 @@ class Stage < ActiveRecord::Base
     write_attribute(:tasks_cache, nil)  unless @writing_tasks_cache
   end
   
-  def recipes_changed(recipe)
+  def deployment_changed(object)
     clear_tasks_cache!
   end
   
